@@ -10,9 +10,10 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Service;
 
 import com.sofoniaselala.file_haven_java_api.Exceptions.AccessDeniedException;
+import com.sofoniaselala.file_haven_java_api.Helpers.AppUserDetails;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -21,12 +22,16 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import io.jsonwebtoken.security.SignatureException;
 
+/*
+ * This manages JSON Web Tokens for user
+ */
+@Service
 public class JwtService {
     private static final String SECRET_KEY = System.getenv("ACCESS_TOKEN_SECRET");
     private static final int DAYS = 14; //Two weeks expiration date
 
 
-    public String extractUsername(String token) {
+    public String extractUseId(String token) {
         return extractClaim(token, Claims::getSubject); // Claims::getSubject is a method reference that points to the getSubject() method of the Claims class
     }
 
@@ -57,26 +62,26 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
+    public Boolean validateToken(String token, AppUserDetails userDetails) {
+        final String userId = extractUseId(token);
+        return (Integer.valueOf(userId) == userDetails.getId() && !isTokenExpired(token));
     }
 
 
 
-    public String GenerateToken(String username){
+    public String GenerateToken(int userId){
         Map<String, Object> claims = new HashMap<>();
-        return createToken(claims, username);
+        return createToken(claims, userId);
     }
 
 
 
-    private String createToken(Map<String, Object> claims, String username) {
+    private String createToken(Map<String, Object> claims, int userId) {
 
         Instant now = Instant.now();
         return Jwts.builder()
                 .claims(claims)
-                .subject(username)
+                .subject(String.valueOf(userId))
                 .issuedAt(Date.from(now))
                 .expiration(Date.from(now.plus(DAYS, ChronoUnit.DAYS)))
                 .signWith(getSignKey()).compact();
