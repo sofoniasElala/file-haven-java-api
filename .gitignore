@@ -4,6 +4,7 @@ target/
 !**/src/main/**/target/
 !**/src/test/**/target/
 src/main/resources/application.properties
+src/main/java/com/sofoniaselala/file_haven_java_api/Services/env.txt
 ### STS ###
 .apt_generated
 .classpath
