@@ -10,6 +10,7 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 import com.sofoniaselala.file_haven_java_api.Exceptions.AccessDeniedException;
@@ -62,9 +63,9 @@ public class JwtService {
         return extractExpiration(token).before(new Date());
     }
 
-    public Boolean validateToken(String token, AppUserDetails userDetails) {
+    public Boolean validateToken(String token, UserDetails userDetails) {
         final String userId = extractUseId(token);
-        return (Integer.valueOf(userId) == userDetails.getId() && !isTokenExpired(token));
+        return (Integer.valueOf(userId) == ((AppUserDetails) userDetails).getId() && !isTokenExpired(token));
     }
 
 
