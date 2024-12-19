@@ -20,7 +20,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     public UserDetailsServiceImpl(final UserRepository userRepository){
         this.userRepository = userRepository;
     }
-    // Internally called authenticationManager.authenticate() / Spring to get user record during log in request for authentication manager to verify password
+    // Internally called by authenticationManager.authenticate() / Spring to get user record during log in request for authentication manager to verify password
     @Override
     public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException{
         Optional<User> userOptional = this.userRepository.findById(Integer.valueOf(userId));
