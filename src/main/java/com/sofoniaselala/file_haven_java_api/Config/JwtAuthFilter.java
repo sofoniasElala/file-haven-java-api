@@ -55,7 +55,7 @@ public class JwtAuthFilter extends OncePerRequestFilter { // OncePerRequestFilte
       userID = jwtService.extractUseId(token);
 
       if(userID != null){
-            UserDetails userDetails = userDetailsServiceImpl.loadUserByUsername(userID);
+            UserDetails userDetails = userDetailsServiceImpl.loadUserById(Integer.valueOf(userID));
             if(jwtService.validateToken(token, userDetails)){
                 UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userDetails, null, null); // acts as a container for authenticated user details, which can be passed around securely within the application
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

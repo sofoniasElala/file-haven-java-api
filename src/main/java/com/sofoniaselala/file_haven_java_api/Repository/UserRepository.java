@@ -9,5 +9,5 @@ import com.sofoniaselala.file_haven_java_api.Model.User;
 
 @Repository
 public interface UserRepository extends CrudRepository<User, Integer> {
-    Optional<User> findByUserNameIgnoreCase(String userName);
+    Optional<User> findByUsernameIgnoreCase(String username);
 }

@@ -22,8 +22,19 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     }
     // Internally called by authenticationManager.authenticate() / Spring to get user record during log in request for authentication manager to verify password
     @Override
-    public UserDetails loadUserByUsername(String userId) throws UsernameNotFoundException{
-        Optional<User> userOptional = this.userRepository.findById(Integer.valueOf(userId));
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
+        Optional<User> userOptional = this.userRepository.findByUsernameIgnoreCase(username);
+        System.out.println(userOptional);
+        if(!userOptional.isPresent()){
+            throw new UsernameNotFoundException("User not found");
+        }
+        User user = userOptional.get();
+        return new AppUserDetails(user);
+    }
+
+    public UserDetails loadUserById(Integer id){
+        Optional<User> userOptional = this.userRepository.findById(id);
+        System.out.println(userOptional);
         if(!userOptional.isPresent()){
             throw new UsernameNotFoundException("User not found");
         }
