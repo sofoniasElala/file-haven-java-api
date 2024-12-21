@@ -24,7 +24,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
         Optional<User> userOptional = this.userRepository.findByUsernameIgnoreCase(username);
-        System.out.println(userOptional);
         if(!userOptional.isPresent()){
             throw new UsernameNotFoundException("User not found");
         }
@@ -34,7 +33,6 @@ public class UserDetailsServiceImpl implements UserDetailsService {
 
     public UserDetails loadUserById(Integer id){
         Optional<User> userOptional = this.userRepository.findById(id);
-        System.out.println(userOptional);
         if(!userOptional.isPresent()){
             throw new UsernameNotFoundException("User not found");
         }
