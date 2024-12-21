@@ -5,6 +5,8 @@ import java.sql.Timestamp;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -35,7 +37,7 @@ public class File {
     private String name;
 
     @Column(name = "createdAt")
-    private Timestamp createdAt;
+    private Timestamp createdAt = new Timestamp(System.currentTimeMillis()); //default to current time
 
     @Column(name = "updatedAt")
     private Timestamp updatedAt;
@@ -53,12 +55,14 @@ public class File {
     private long size;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name="user_id", nullable=false)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Integer user;
+    private User user;
 
     @ManyToOne
+    @JsonIgnore
     @JoinColumn(name="folder_id", nullable=true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private Integer parentFolder;
+    private Folder parentFolder;
 }
