@@ -28,6 +28,15 @@ public class User {
     @Column(name="id")
     private Integer id;
 
+     // Default constructor required by JPA
+     public User() {}
+
+     // Custom constructor for instantiation by custom code
+     public User(String username, String password) {
+         this.username = username;
+         this.password = password;
+     }
+
     @Column(name = "username")
     private String username;
     
