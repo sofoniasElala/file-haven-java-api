@@ -10,7 +10,10 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -25,7 +28,9 @@ import com.sofoniaselala.file_haven_java_api.Helpers.AppUserDetails;
 import com.sofoniaselala.file_haven_java_api.Model.User;
 import com.sofoniaselala.file_haven_java_api.Repository.UserRepository;
 import com.sofoniaselala.file_haven_java_api.Services.JwtService;
+import com.sofoniaselala.file_haven_java_api.Services.S3Service;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
@@ -36,12 +41,14 @@ public class UserController {
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final  PasswordEncoder passwordEncoder;
+    private final S3Service s3Service;
 
-    public UserController(UserRepository userRepository, AuthenticationManager authenticationManager, JwtService jwtService, PasswordEncoder passwordEncoder){
+    public UserController(UserRepository userRepository, AuthenticationManager authenticationManager, JwtService jwtService, S3Service s3Service, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
+        this.s3Service = s3Service;
 
     }
 
@@ -89,7 +96,7 @@ public class UserController {
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.OK)
-    public Map<String, Object> signup(@Valid @RequestBody SignupRequest request, HttpServletResponse response){
+    public Map<String, Object> signup(@Valid @RequestBody SignupRequest request){
         Map<String, Object> responseBody = new HashMap<>();
         if(!request.password().equals(request.confirmPassword())) {
              responseBody.put("success", false);
@@ -112,4 +119,25 @@ public class UserController {
     return responseBody;
 
     }
+
+    @DeleteMapping("/user/delete")
+    @ResponseStatus(HttpStatus.OK)
+    public Map<String, Object> deleteAccount(HttpServletRequest request){
+        AppUserDetails user = (AppUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //authenticated user
+        Map<String, Object> responseBody = new HashMap<>();
+        try{
+           this.s3Service.deleteFolder("users/" + Integer.toString(user.getId()));
+            this.userRepository.deleteById(user.getId());
+        } catch(Exception e) {
+            System.out.printf("Error deleting user: %s", e);
+            responseBody.put("success", false);
+            return responseBody;
+        }
+        
+         new SecurityContextLogoutHandler().logout(request, null, null); // response/second arg is null bc redirect is done on client side
+        responseBody.put("success", true);
+        
+        return responseBody;
+    }
+
 }
