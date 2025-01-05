@@ -12,7 +12,6 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -122,20 +121,18 @@ public class UserController {
 
     @DeleteMapping("/user/delete")
     @ResponseStatus(HttpStatus.OK)
-    public Map<String, Object> deleteAccount(HttpServletRequest request){
+    public Map<String, Object> deleteAccount(HttpServletRequest request,  HttpServletResponse response){
         AppUserDetails user = (AppUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //authenticated user
         Map<String, Object> responseBody = new HashMap<>();
         try{
            this.s3Service.deleteFolder("users/" + Integer.toString(user.getId()));
             this.userRepository.deleteById(user.getId());
+            response.sendRedirect("/logout");
         } catch(Exception e) {
             System.out.printf("Error deleting user: %s", e);
             responseBody.put("success", false);
             return responseBody;
         }
-        
-         new SecurityContextLogoutHandler().logout(request, null, null); // response/second arg is null bc redirect is done on client side
-        responseBody.put("success", true);
         
         return responseBody;
     }
