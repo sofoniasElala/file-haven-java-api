@@ -1,6 +1,8 @@
 package com.sofoniaselala.file_haven_java_api.Model;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Set;
 
 import org.hibernate.annotations.OnDelete;
@@ -18,7 +20,6 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -31,7 +32,7 @@ import lombok.Setter;
 public class Folder {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //auto increment strategy
-    @Setter(AccessLevel.NONE)
+    //@Setter(AccessLevel.NONE)
     @Column(name="id")
     private Integer id;
 
@@ -39,10 +40,10 @@ public class Folder {
     private String name;
 
     @Column(name = "createdAt")
-    private Timestamp createdAt = new Timestamp(System.currentTimeMillis()); //default to current time
+    private Timestamp createdAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.HOURS)); //default to current time in UTC 
 
     @Column(name = "updatedAt")
-    private Timestamp updatedAt;
+    private Timestamp updatedAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.HOURS)); //default to current time in UTC 
 
     @ManyToOne
     @JsonIgnore // this annotation stops the serialization of a column/field. in this case user field and it won't go and get user record in its entirety
@@ -61,4 +62,14 @@ public class Folder {
 
     @OneToMany(mappedBy = "parentFolder")
     private Set<File> files;
+
+    // Default constructor required by JPA
+    public Folder() {}
+
+    // Custom constructor for instantiation by custom code
+    public Folder(String name, User user, Folder parentFolder) {
+        this.name = name;
+        this.user = user;
+        this.parentFolder = parentFolder;
+    }
 }

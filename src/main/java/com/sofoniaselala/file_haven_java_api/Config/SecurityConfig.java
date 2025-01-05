@@ -55,6 +55,7 @@ public class SecurityConfig {
     //            our public endpoints
                 .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
+                .requestMatchers(HttpMethod.GET, "/auth/status").permitAll()
     //            our private endpoints
                 .anyRequest().authenticated())
                 .logout(logout -> logout

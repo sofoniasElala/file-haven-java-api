@@ -11,7 +11,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -24,18 +23,9 @@ import lombok.Setter;
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //auto increment strategy
-    @Setter(AccessLevel.NONE)
+    //@Setter(AccessLevel.NONE)
     @Column(name="id")
     private Integer id;
-
-     // Default constructor required by JPA
-     public User() {}
-
-     // Custom constructor for instantiation by custom code
-     public User(String username, String password) {
-         this.username = username;
-         this.password = password;
-     }
 
     @Column(name = "username")
     private String username;
@@ -48,4 +38,13 @@ public class User {
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     private Set<File> files;
+
+    // Default constructor required by JPA
+    public User() {}
+
+    // Custom constructor for instantiation by custom code
+    public User(String username, String password) {
+        this.username = username;
+        this.password = password;
+    }
 }

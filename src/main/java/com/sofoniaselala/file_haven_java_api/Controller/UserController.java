@@ -34,6 +34,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 
 
+
 @RestController
 public class UserController {
     private final UserRepository userRepository;
@@ -136,5 +137,25 @@ public class UserController {
         
         return responseBody;
     }
+
+    @GetMapping("/auth/status")
+    public Map<String, Object> checkStatus(HttpServletRequest request, HttpServletResponse response) {
+        Map<String, Object> responseBody = new HashMap<>();
+        if(request.getCookies() != null){
+            AppUserDetails user = (AppUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //possible authenticated user
+            if(user != null){
+                response.setStatus(HttpServletResponse.SC_OK); //200
+                responseBody.put("loggedIn", true);
+                return responseBody;
+            }
+        }
+        
+        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); //401
+        responseBody.put("loggedIn", false);
+        
+
+        return responseBody;
+    }
+    
 
 }
