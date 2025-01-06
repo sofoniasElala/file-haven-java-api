@@ -14,5 +14,5 @@ import com.sofoniaselala.file_haven_java_api.Model.Folder;
 @Repository
 public interface FolderRepository extends CrudRepository<Folder, Integer> {
     Optional<Folder> findByIdAndUser_Id(Integer id, Integer user);
-    List<Folder> findAllByParentFolder_Id(Integer id, Sort sort);
+    List<Folder> findAllByUser_IdAndParentFolder_Id(Integer id, Integer folderId, Sort sort);
 }
