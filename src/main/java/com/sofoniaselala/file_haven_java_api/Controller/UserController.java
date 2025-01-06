@@ -70,7 +70,7 @@ public class UserController {
         return this.userRepository.findAll();
     }
 
-    @GetMapping("/")
+    @GetMapping
     public Map<String, Object> getHome(@RequestParam Map<String, String> params) {
         Map<String, Object> responseBody = new HashMap<>();
         Map<String, Object> data = new HashMap<>();
