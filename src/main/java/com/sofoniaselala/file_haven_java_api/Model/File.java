@@ -1,6 +1,8 @@
 package com.sofoniaselala.file_haven_java_api.Model;
 
 import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
@@ -16,7 +18,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import jakarta.persistence.UniqueConstraint;
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -29,7 +30,7 @@ import lombok.Setter;
 public class File {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY) //auto increment strategy
-    @Setter(AccessLevel.NONE)
+   // @Setter(AccessLevel.NONE)
     @Column(name="id")
     private Integer id;
 
@@ -37,10 +38,10 @@ public class File {
     private String name;
 
     @Column(name = "createdAt")
-    private Timestamp createdAt = new Timestamp(System.currentTimeMillis()); //default to current time
+    private Timestamp createdAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.HOURS)); //default to current time in UTC 
 
     @Column(name = "updatedAt")
-    private Timestamp updatedAt;
+    private Timestamp updatedAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.HOURS)); //default to current time in UTC 
 
     @Column(name = "type")
     private String type;
@@ -65,4 +66,19 @@ public class File {
     @JoinColumn(name="folder_id", nullable=true)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Folder parentFolder;
+
+
+    // Default constructor required by JPA
+    public File() {}
+
+    // Custom constructor for instantiation by custom code
+    public File(String name, long size, String type, String storage_url, String storage_path, User user, Folder parentFolder) {
+        this.name = name;
+        this.size = size;
+        this.type = type;
+        this.storage_url = storage_url;
+        this.storage_path = storage_path;
+        this.user = user;
+        this.parentFolder = parentFolder;
+    }
 }
