@@ -13,6 +13,7 @@ import software.amazon.awssdk.core.ResponseInputStream;
 import software.amazon.awssdk.core.exception.SdkClientException;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
+import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
@@ -36,15 +37,16 @@ public class S3Service {
     /**
      * Upload a file to S3 bucket.
      *
-     * @param key  The object key (path in the bucket).
+     * @param name  The object key (path in the bucket).
+     * @param userID  User id.
      * @param file The file to upload.
      * @return Confirmation message.
      */
-    public String uploadFile(String key, File file) {
+    public String uploadFile(String name, Integer userId, File file) {
         try{
             PutObjectRequest request = PutObjectRequest.builder()
                     .bucket(bucketName)
-                    .key(key)
+                    .key("users/" + userId + "/" + name)
                     .build();
 
             s3Client.putObject(request, RequestBody.fromFile(file));
@@ -58,7 +60,34 @@ public class S3Service {
             // Catch any other exceptions
             logger.error("Unexpected error occurred. Message: {}", e.getMessage());
         }
-        return "File uploaded successfully: " + key;
+        return "File uploaded successfully: " + name;
+    }
+
+    // Rename a file in the bucket
+    public void renameFile(String oldName, Integer userId, String newName) {
+        try {
+            // Copy the file to the new key (destination)
+            CopyObjectRequest copyObjRequest =  CopyObjectRequest.builder()
+                .sourceBucket(bucketName)
+                .sourceKey("users/" + userId + "/" + oldName)
+                .destinationBucket(bucketName)
+                .destinationKey("users/" + userId + "/" + newName)
+                .build();
+
+            s3Client.copyObject(copyObjRequest);
+
+            // Delete the original file
+            DeleteObjectRequest deleteObjRequest = DeleteObjectRequest.builder()
+                .bucket(bucketName)
+                .key("users/" + userId + "/" + oldName)
+                .build();
+            s3Client.deleteObject(deleteObjRequest);
+
+            System.out.println("File renamed from " + oldName + " to " + newName);
+        } catch (Exception e) {
+            System.err.println("Error renaming file: " + e.getMessage());
+            throw e;
+        }
     }
 
     /**
