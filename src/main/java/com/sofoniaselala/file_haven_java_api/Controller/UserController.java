@@ -1,9 +1,11 @@
 package com.sofoniaselala.file_haven_java_api.Controller;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
@@ -17,6 +19,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -24,7 +27,12 @@ import org.springframework.web.server.ResponseStatusException;
 import com.sofoniaselala.file_haven_java_api.Controller.DTOs.LoginRequest;
 import com.sofoniaselala.file_haven_java_api.Controller.DTOs.SignupRequest;
 import com.sofoniaselala.file_haven_java_api.Helpers.AppUserDetails;
+import com.sofoniaselala.file_haven_java_api.Helpers.ColumnSorter;
+import com.sofoniaselala.file_haven_java_api.Model.File;
+import com.sofoniaselala.file_haven_java_api.Model.Folder;
 import com.sofoniaselala.file_haven_java_api.Model.User;
+import com.sofoniaselala.file_haven_java_api.Repository.FileRepository;
+import com.sofoniaselala.file_haven_java_api.Repository.FolderRepository;
 import com.sofoniaselala.file_haven_java_api.Repository.UserRepository;
 import com.sofoniaselala.file_haven_java_api.Services.JwtService;
 import com.sofoniaselala.file_haven_java_api.Services.S3Service;
@@ -35,16 +43,21 @@ import jakarta.validation.Valid;
 
 
 
+
 @RestController
 public class UserController {
     private final UserRepository userRepository;
+    private final FolderRepository folderRepository;
+    private final FileRepository fileRepository;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
     private final  PasswordEncoder passwordEncoder;
     private final S3Service s3Service;
 
-    public UserController(UserRepository userRepository, AuthenticationManager authenticationManager, JwtService jwtService, S3Service s3Service, PasswordEncoder passwordEncoder){
+    public UserController(UserRepository userRepository, FolderRepository folderRepository,  FileRepository fileRepository, AuthenticationManager authenticationManager, JwtService jwtService, S3Service s3Service, PasswordEncoder passwordEncoder){
         this.userRepository = userRepository;
+        this.folderRepository = folderRepository;
+        this.fileRepository = fileRepository;
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.passwordEncoder = passwordEncoder;
@@ -56,6 +69,25 @@ public class UserController {
     public Iterable<User> getUsers() {
         return this.userRepository.findAll();
     }
+
+    @GetMapping("/")
+    public Map<String, Object> getHome(@RequestParam Map<String, String> params) {
+        Map<String, Object> responseBody = new HashMap<>();
+        Map<String, Object> data = new HashMap<>();
+        AppUserDetails user = (AppUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //authenticated user
+
+        Sort sort = ColumnSorter.getSort(params.get("sortByUpdatedAt"), params.get("sortByName"));
+        List<Folder> TopFolders = this.folderRepository.findAllByUser_IdAndParentFolder_Id(user.getId(), null, sort);
+        List<File> TopFiles = this.fileRepository.findAllByUser_IdAndParentFolder_Id(user.getId(), null, sort);
+        data.put("folders", TopFolders);
+        data.put("files", TopFiles);
+
+        responseBody.put("success", true);
+        responseBody.put("data", data);
+
+        return responseBody;
+    }
+    
     
 
     @GetMapping("/user/{id}")
