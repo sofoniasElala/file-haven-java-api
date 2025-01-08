@@ -3,7 +3,7 @@ target/
 !.mvn/wrapper/maven-wrapper.jar
 !**/src/main/**/target/
 !**/src/test/**/target/
-src/main/resources/application.properties
+src/main/resources/SecretApplication.properties
 src/main/java/com/sofoniaselala/file_haven_java_api/Services/infoToRemember.txt
 src/main/resources/file-haven-files-user_accessKeys.csv
 src/main/resources/META-INF
