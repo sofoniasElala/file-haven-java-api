@@ -56,7 +56,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/signup").permitAll()
                 .requestMatchers(HttpMethod.POST, "/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/auth/status").permitAll()
-                .requestMatchers(HttpMethod.HEAD, "/login").permitAll() //for monitoring on uptimeRobot
     //            our private endpoints
                 .anyRequest().authenticated())
                 .logout(logout -> logout
