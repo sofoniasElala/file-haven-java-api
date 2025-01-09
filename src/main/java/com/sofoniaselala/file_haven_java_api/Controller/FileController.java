@@ -111,6 +111,21 @@ public class FileController {
         return responseBody;
     }
 
+    @GetMapping("/{fileName}/download")
+    @ResponseStatus(HttpStatus.FOUND)
+    public Map<String, Object> download(@PathVariable("fileName") String fileName) throws IOException {
+        Map<String, Object> responseBody = new HashMap<>();
+        AppUserDetails user = (AppUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //authenticated user
+        Optional<File> fileOptional = this.fileRepository.findByNameAndUser_Id(fileName, user.getId());
+        if(!fileOptional.isPresent()) throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File does not exist.");
+
+        Map<String, Object> base64FileData = s3Service.downloadFile(fileName, user.getId());
+        responseBody.put("success", true);
+        responseBody.put("base64File", base64FileData.get("base64"));
+        responseBody.put("type", base64FileData.get("type"));
+        return responseBody;
+    }
+
     @DeleteMapping("/{fileId}")
     @ResponseStatus(HttpStatus.OK)
     public Map<String, Object> deleteFile(@PathVariable("fileId") Integer fileId){

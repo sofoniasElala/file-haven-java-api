@@ -1,8 +1,10 @@
 package com.sofoniaselala.file_haven_java_api.Services;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -17,6 +19,8 @@ import software.amazon.awssdk.services.s3.model.CopyObjectRequest;
 import software.amazon.awssdk.services.s3.model.DeleteObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectRequest;
 import software.amazon.awssdk.services.s3.model.GetObjectResponse;
+import software.amazon.awssdk.services.s3.model.HeadObjectRequest;
+import software.amazon.awssdk.services.s3.model.HeadObjectResponse;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Request;
 import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
@@ -93,24 +97,33 @@ public class S3Service {
     /**
      * Download a file from S3 bucket.
      *
-     * @param key          The object key (path in the bucket).
-     * @param downloadPath The local path to save the downloaded file.
-     * @return The downloaded file.
+     * @param name  The object name/key (path in the bucket).
+     * @param userID  User id.
+     * @return The downloaded file in base64 string.
      * @throws IOException If file writing fails.
      */
-    public File downloadFile(String key, String downloadPath) throws IOException {
+    public Map<String, Object> downloadFile(String name, Integer userId) throws IOException {
+        Map<String, Object> fileData =  new HashMap<>();
         GetObjectRequest request = GetObjectRequest.builder()
                 .bucket(bucketName)
-                .key(key)
+                .key("users/" + userId + "/" + name)
+                .build();
+        
+        HeadObjectRequest metaDataRequest = HeadObjectRequest.builder()
+                .bucket(bucketName)
+                .key("users/" + userId + "/" + name)
                 .build();
 
         ResponseInputStream<GetObjectResponse> response = s3Client.getObject(request);
+        HeadObjectResponse headObjectResponse = s3Client.headObject(metaDataRequest);
 
-        File file = new File(downloadPath);
-        try (FileOutputStream outputStream = new FileOutputStream(file)) {
-            response.transferTo(outputStream);
-        }
-        return file;
+        String type = headObjectResponse.contentType();
+        String base64String = Base64.getEncoder().encodeToString(response.readAllBytes());
+
+        fileData.put("base64", base64String);
+        fileData.put("type", type);
+
+        return fileData;
     }
 
     /**
