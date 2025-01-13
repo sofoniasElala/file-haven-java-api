@@ -48,6 +48,7 @@ public class FolderController {
     @ResponseStatus(HttpStatus.FOUND)
     public Map<String, Object> getFolder(@PathVariable("folderId") Integer folderId, @RequestParam Map<String, String> params) {
         Map<String, Object> responseBody = new HashMap<>();
+        Map<String, Object> folder = new HashMap<>();
         AppUserDetails user = (AppUserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal(); //authenticated user
         Sort sort = ColumnSorter.getSort(params.get("sortByUpdatedAt"), params.get("sortByName"));
         Optional<Folder> parentFolder = this.folderRepository.findByIdAndUser_Id(folderId, user.getId());
@@ -56,10 +57,12 @@ public class FolderController {
         List<Folder> folders = this.folderRepository.findAllByUser_IdAndParentFolder_Id(user.getId(), folderId, sort);
         List<File> files = this.fileRepository.findAllByUser_IdAndParentFolder_Id(user.getId(), folderId, sort);
 
+        folder.put("folders", folders);
+        folder.put("files", files);
+
         responseBody.put("success", true);
         responseBody.put("parentFolderName", parentFolder.get().getName());
-        responseBody.put("folder", folders);
-        responseBody.put("files", files);
+        responseBody.put("folder", folder);
 
         return responseBody;
     }

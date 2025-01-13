@@ -10,6 +10,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -105,40 +106,50 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     public Map<String, Object> login(@Valid @RequestBody LoginRequest request, HttpServletResponse response){
         Map<String, Object> responseBody = new HashMap<>();
-        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
-    if(authentication.isAuthenticated()){
-        String accessToken = jwtService.GenerateToken(((AppUserDetails)authentication.getPrincipal()).getId());
-        // set accessToken to cookie header
-        ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
-                .httpOnly(true)
-                .secure(false)
-                .path("/")
-                .maxAge(60 * 60 * 24 * 14) // 2 weeks in seconds
-                .build();
-        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        try {
+            Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.username(), request.password()));
+        if(authentication.isAuthenticated()){
+            String accessToken = jwtService.GenerateToken(((AppUserDetails)authentication.getPrincipal()).getId());
+            // set accessToken to cookie header
+            ResponseCookie cookie = ResponseCookie.from("accessToken", accessToken)
+                    .httpOnly(true)
+                    .secure(false)
+                    .path("/")
+                    .maxAge(60 * 60 * 24 * 14) // 2 weeks in seconds
+                    .build();
+            response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
 
-        responseBody.put("success", true);
+            responseBody.put("success", true);
+            responseBody.put("username", request.username());
 
-    } else {
-        responseBody.put("success", false);
-    }
+        } else {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); //401
+            responseBody.put("success", false);
+        }
+    }  catch (BadCredentialsException e) {
+         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED); //401
+         responseBody.put("success", false);
+         responseBody.put("errors", "Invalid username or password!");
+        }
     return responseBody;
 
     }
 
     @PostMapping("/signup")
     @ResponseStatus(HttpStatus.OK)
-    public Map<String, Object> signup(@Valid @RequestBody SignupRequest request){
+    public Map<String, Object> signup(@Valid @RequestBody SignupRequest request, HttpServletResponse response){
         Map<String, Object> responseBody = new HashMap<>();
         if(!request.password().equals(request.confirmPassword())) {
+             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
              responseBody.put("success", false);
              responseBody.put("message", "Passwords don't match");
         } else {
              String username = request.username();
              Optional<User> existingUser = this.userRepository.findByUsernameIgnoreCase(username);
             if (existingUser.isPresent()) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST); 
                 responseBody.put("success", false);
-                responseBody.put("message", String.format("User with the email address '%s' already exists.", username));
+                responseBody.put("message", String.format("The username '%s' already exists.", username));
             } else {
                 String hashedPassword = passwordEncoder.encode(request.password());
                 User user = new User(username, hashedPassword);

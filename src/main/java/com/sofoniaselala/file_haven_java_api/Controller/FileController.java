@@ -106,7 +106,7 @@ public class FileController {
         File updatedFile = this.fileRepository.save(updatedFileObject);
 
         responseBody.put("success", true);
-        responseBody.put("updatedFile", updatedFile);
+        responseBody.put("file", updatedFile);
         
         return responseBody;
     }
