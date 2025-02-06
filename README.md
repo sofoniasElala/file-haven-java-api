@@ -1,7 +1,7 @@
 # ***File Haven*** API - ***java version***
 ## Description
 File Haven JAVA API is a  simple RESTful API for managing ***File Haven*** files, folders, and users. It allows a user to perform basic CRUD operations on their files, and folders, and it supports user authentication.  
-[![Static Badge](https://img.shields.io/badge/Live%20API-blue)](https://java-api.sofonias-elala-file-haven.xyz)
+[![Static Badge](https://img.shields.io/badge/Live%20API-blue)](https://java-api.sofonias-elala-file-haven.xyz/auth/status)
 
 ## Features
 
