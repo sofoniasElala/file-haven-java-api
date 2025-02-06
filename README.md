@@ -12,7 +12,7 @@ File Haven JAVA API is a  simple RESTful API for managing ***File Haven*** files
 
 ## Link to ***File Haven*** front-end repo
  * [![Static Badge](https://img.shields.io/badge/File%20Haven-green)](https://github.com/sofoniasElala/file-haven)
- * ***Will be connected to the frontend soon. if you want to see the frontend with node/express backend, click the above link.***
+ * ***Will connect the frontend to this soon. if you want to see the frontend with node/express backend, click the above link.***
 ### PostgreSQL Database Schema
 ![schema](https://github.com/sofoniasElala/file-haven-api/blob/main/file-haven.png)
 
